@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Field, withFormik } from "formik";
 import * as Yup from "yup";
+import Axios from "axios";
 //import axios from "axios";
 
 const UserForm = ({errors, touched, values, status}) => {
@@ -40,7 +41,7 @@ const UserForm = ({errors, touched, values, status}) => {
 
                 <label>
                     Terms of Services. Check to Accept
-                    <Field type="checkbox" name="terms-of-service" value={values.terms} />
+                    <Field type="checkbox" name="tos" checked={values.tos} />
                 </label>
 
                 <button type="submit">Submit</button>
@@ -59,12 +60,12 @@ const UserForm = ({errors, touched, values, status}) => {
 };
 
 const FormikForm = withFormik({
-    mapPropsToValues({ name, email, password }) {
+    mapPropsToValues({ name, email, password, tos }) {
         return {
             name: name || "",
             email: email || "",
             password: password || "",
-            terms: false,
+            tos: tos || false
         };
     },
 
@@ -76,14 +77,23 @@ const FormikForm = withFormik({
         password: Yup.string()
             .min(6, "Password must be 6 characters or longer")
             .required("Password is required"), 
-        terms: Yup.bool().required("Please check box")
+        tos: Yup.bool().required("Please check box")
     }),
 
     handleSubmit(values, {setStatus, resetForm}) {
         console.log("Submitting form:", values);
+
+        Axios
+            .post(`https://reqres.in/api/users`, values) 
+            .then(res => {
+                console.log("Success:", res);
+                setStatus(res.data);
+                resetForm();
+              })
+              .catch(err => {
+                console.log("Error:", err.response);
+              });
     }
-
-
 })(UserForm);
 
 
